@@ -1,5 +1,6 @@
 package com.tictactoe;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -19,8 +20,24 @@ public class LogicServlet extends HttpServlet {
         Field field = extractField(currentSession);
         // получаем индекс ячейки, по которой произошел клик
         int index = getSelectedIndex(req);
+        Sign currentSign = field.getField().get(index);
+        // Проверяем, что ячейка, по которой был клик пустая.
+        // Иначе ничего не делаем и отправляем пользователя на ту же страницу без изменений
+        // параметров в сессии
+        if (Sign.EMPTY != currentSign) {
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/index.jsp");
+            dispatcher.forward(req, resp);
+            return;
+        }
+
         // ставим крестик в ячейке, по которой кликнул пользователь
         field.getField().put(index, Sign.CROSS);
+        // Получаем пустую ячейку поля
+        int emptyFieldIndex = field.getEmptyFieldIndex();
+
+        if (emptyFieldIndex >= 0) {
+            field.getField().put(emptyFieldIndex, Sign.NOUGHT);
+        }
         // Считаем список значков
         List<Sign> data = field.getFieldData();
         // Обновляем объект поля и список значков в сессии
@@ -30,7 +47,11 @@ public class LogicServlet extends HttpServlet {
         resp.sendRedirect("/index.jsp");
     }
 
-
+    private int getSelectedIndex(HttpServletRequest request) {
+        String click = request.getParameter("click");
+        boolean isNumeric = click.chars().allMatch(Character::isDigit);
+        return isNumeric ? Integer.parseInt(click) : 0;
+    }
 
     private Field extractField(HttpSession currentSession) {
         Object fieldAttribute = currentSession.getAttribute("field");
@@ -39,11 +60,5 @@ public class LogicServlet extends HttpServlet {
             throw new RuntimeException("Session is broken, try one more time");
         }
         return (Field) fieldAttribute;
-    }
-
-    private int getSelectedIndex(HttpServletRequest request) {
-        String click = request.getParameter("click");
-        boolean isNumeric = click.chars().allMatch(Character::isDigit);
-        return isNumeric ? Integer.parseInt(click) : 0;
     }
 }
