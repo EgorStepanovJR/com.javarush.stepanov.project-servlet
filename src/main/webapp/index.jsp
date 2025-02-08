@@ -4,6 +4,7 @@
 <html>
 <head>
     <title>Tic-Tac-Toe</title>
+    <link href="static/main.css" rel="stylesheet">
 </head>
 <body>
 <h1>Tic-Tac-Toe</h1>
