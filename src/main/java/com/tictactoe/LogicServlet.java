@@ -29,7 +29,6 @@ public class LogicServlet extends HttpServlet {
             dispatcher.forward(req, resp);
             return;
         }
-
         // ставим крестик в ячейке, по которой кликнул пользователь
         field.getField().put(index, Sign.CROSS);
         // Получаем пустую ячейку поля
@@ -45,6 +44,17 @@ public class LogicServlet extends HttpServlet {
         currentSession.setAttribute("field", field);
 
         resp.sendRedirect("/index.jsp");
+        // Проверяем, не победил ли крестик после добавления последнего клика пользователя
+        if (checkWin(resp, currentSession, field)) {
+            return;
+        }
+        if (emptyFieldIndex >= 0) {
+            field.getField().put(emptyFieldIndex, Sign.NOUGHT);
+            // Проверяем, не победил ли нолик после добавление последнего нолика
+            if (checkWin(resp, currentSession, field)) {
+                return;
+            }
+        }
     }
 
     private int getSelectedIndex(HttpServletRequest request) {
